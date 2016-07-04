@@ -32,9 +32,9 @@ void processSide(byte side) {
       for (byte s=0; s<NUM_SIDES; s++) {
         setState(s, SELECT_TIME); 
       }
-      ensureArmLow(side); 
       remaining[side] = defaultValue[side];
     } // no else
+    ensureArmLow(side);
   } // no else
 
   if (getState(side) == COUNT_DOWN) {
@@ -53,7 +53,6 @@ void processSide(byte side) {
     raiseArm(side);
     soundSignal();
   } 
-  
 }
 
 long getStateColor(int state) {
@@ -123,6 +122,7 @@ void useWhenBuilding(byte side) {
   showAll();
   lowerArm(side); 
   delay(500);
+  
 #ifdef COMISSIONING
   Serial.println(20*keyHit + readTemp(side));
 #endif
@@ -132,8 +132,8 @@ void loop() {
   
 #ifdef COMISSIONING
 
-  useWhenBuilding(LEFT);
-  // useWhenBuilding(RIGHT);
+  //useWhenBuilding(LEFT);
+  useWhenBuilding(RIGHT);
 
 #else
 
@@ -146,5 +146,6 @@ void loop() {
   } else {
     animateEyes();  
   }
+  
 #endif
 }

@@ -46,6 +46,6 @@
 #define OFFSET_LEFT         LEDS_PER_RING     // depending on how  
 #define OFFSET_RIGHT               0          // you wired and 
 #define ROTATION_LEFT              6          // glued the LED rings
-#define ROTATION_RIGHT             6          // these 4 values need to be adjusted
+#define ROTATION_RIGHT             5          // these 4 values need to be adjusted
 
 #endif
