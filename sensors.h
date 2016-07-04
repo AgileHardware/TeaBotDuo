@@ -9,7 +9,7 @@
 #define HISTORY_DELTA  2000  // store a value each 2 sec
 
 void    setupSensors();
-boolean adjust(byte side, int &value);
+boolean adjust(byte side, long &value);
 int     readTemp(byte side);
 void    resetSuddenRaise();
 boolean isSuddenRaise(byte side);

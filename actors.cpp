@@ -6,12 +6,12 @@
 Adafruit_NeoPixel leds = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 Servo servo;
 
-int armPin      [NUM_SIDES] = {LEFT_ARM_PIN,   RIGHT_ARM_PIN};
+int armPin      [NUM_SIDES] = {LEFT_ARM_PIN,   RIGHT_ARM_PIN  };
 int armLimitDown[NUM_SIDES] = {LEFT_ARM_LOWER, RIGHT_ARM_LOWER};
 int armLimitUp  [NUM_SIDES] = {LEFT_ARM_UPPER, RIGHT_ARM_UPPER};
 
-int ledOffset   [NUM_SIDES] = {OFFSET_LEFT,    OFFSET_RIGHT}; 
-int ledRotation [NUM_SIDES] = {ROTATION_LEFT,  ROTATION_RIGHT};
+int ledOffset   [NUM_SIDES] = {OFFSET_LEFT,    OFFSET_RIGHT   }; 
+int ledRotation [NUM_SIDES] = {ROTATION_LEFT,  ROTATION_RIGHT };
 
 void setupLeds() {
   leds.begin();
@@ -84,10 +84,10 @@ void glowEyes() {
 }
 
 
-void drawCountDown(byte side, int seconds, long color) {
+void drawCountDown(byte side, long ms, long color) {
   int numLedsOn;
   
-  numLedsOn = (seconds/DELTA)+1;
+  numLedsOn = (ms/MS_PER_LED)+1;
   
   for (int i=0; (i<numLedsOn); i++) {
     leds.setPixelColor(ledOffset[side]+(ledRotation[side]+i)%LEDS_PER_RING, color);

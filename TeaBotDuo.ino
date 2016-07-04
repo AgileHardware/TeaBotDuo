@@ -1,14 +1,17 @@
+
+//#define COMISSIONING
+
 #include "config.h"
 #include "sensors.h"
 #include "actors.h"
 #include "state.h"
 
-long remaining   [NUM_SIDES] = {LEFT_DEFAULT_VALUE * DELTA, RIGHT_DEFAULT_VALUE * DELTA};
-long defaultValue[NUM_SIDES] = {LEFT_DEFAULT_VALUE * DELTA, RIGHT_DEFAULT_VALUE * DELTA};
+long remaining   [NUM_SIDES] = {LEFT_DEFAULT, RIGHT_DEFAULT};
+long defaultValue[NUM_SIDES] = {LEFT_DEFAULT, RIGHT_DEFAULT};
 long startTime   [NUM_SIDES] = {0, 0};
 
 void calcRemaining(byte side) {
-  remaining[side]--; // TODO FIX
+  remaining[side] = millis() - startTime[side];
 }
 
 boolean isTeaReady(byte side) {
@@ -23,7 +26,9 @@ void processSide(byte side) {
   if (keyHit) {
     noteActivity();  
     if ((IDLE == getState(side)) || (TEA_READY == getState(side))) {
-      setState(side, SELECT_TIME); 
+      for (byte s=0; s<NUM_SIDES; s++) {
+        setState(s, SELECT_TIME); 
+      }
       ensureArmLow(side); 
       remaining[side] = defaultValue[side];
     } // no else
@@ -42,6 +47,7 @@ void processSide(byte side) {
   if ((getState(side)==COUNT_DOWN) && isTeaReady(side)) {
     setState(side, TEA_READY);
     raiseArm(side);
+    soundSignal();
   } 
   
 }
@@ -92,11 +98,12 @@ void setup() {
 
   soundSignal();
   glowEyes();
-
+#ifdef COMISSIONING
   Serial.begin(9600);
+#endif
 }
 
-int debug = LEFT_DEFAULT;
+long debug = LEFT_DEFAULT;
 
 void useWhenBuilding(byte side) {
   boolean keyHit = false;
@@ -112,11 +119,19 @@ void useWhenBuilding(byte side) {
   showAll();
   lowerArm(side); 
   delay(500);
-  
+#ifdef COMISSIONING
   Serial.println(20*keyHit + readTemp(side));
+#endif
 }
 
 void loop() {
+  
+#ifdef COMISSIONING
+
+  useWhenBuilding(LEFT);
+  // useWhenBuilding(RIGHT);
+
+#else
 
   for (byte side=0; side <NUM_SIDES; side++) {
     processSide(side);
@@ -127,9 +142,5 @@ void loop() {
   } else {
     animateEyes();  
   }
-
-  delay(DELAY);
-
-  // useWhenBuilding(LEFT);
-  // useWhenBuilding(RIGHT);
+#endif
 }

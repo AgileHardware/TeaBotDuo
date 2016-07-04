@@ -18,15 +18,15 @@ void setupSensors() {
   }
 }
 
-boolean adjust(byte side, int &value) {
+boolean adjust(byte side, long &value) {
   boolean result = false;
-  int     begin  = value;
+  long    begin  = value;
   
   if (LOW == digitalRead(pinUp[side])) {
-    value = min(MAX_VALUE, value+DELTA);
+    value = min(MAX_VALUE, value+MS_PER_LED);
     result = true;
   } else if (LOW == digitalRead(pinDown[side])) {
-    value = max(MIN_VALUE, value-DELTA);
+    value = max(MIN_VALUE, value-MS_PER_LED);
     result = true;
   }
   

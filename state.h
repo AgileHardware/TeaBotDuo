@@ -9,8 +9,6 @@
 #define COUNT_DOWN    2  
 #define TEA_READY     3
 
-#define STAY_ACTIVE   1800000 // 30 min = 30 min * 60 s/min * 1000 ms/s
-
 void setupState();
 
 int  getState(byte side);

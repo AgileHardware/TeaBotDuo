@@ -4,9 +4,6 @@
 #include <Arduino.h>
 #include "config.h"
 
-#define LEFT_DEFAULT_VALUE     6
-#define RIGHT_DEFAULT_VALUE    6
-
 //                        RRGGBB  
 #define EYE_COLOR     0x000000ff
 #define LID_COLOR     0x00000000
@@ -31,7 +28,7 @@ void soundSignal();
 
 void glowEyes();
 long animateEyes();
-void drawCountDown(byte side, int seconds, long color);
+void drawCountDown(byte side, long ms, long color);
 void showAll();
 
 #endif
