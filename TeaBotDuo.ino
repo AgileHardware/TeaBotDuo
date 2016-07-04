@@ -9,9 +9,10 @@
 long remaining   [NUM_SIDES] = {LEFT_DEFAULT, RIGHT_DEFAULT};
 long defaultValue[NUM_SIDES] = {LEFT_DEFAULT, RIGHT_DEFAULT};
 long startTime   [NUM_SIDES] = {0, 0};
+long endTime     [NUM_SIDES] = {0, 0};
 
 void calcRemaining(byte side) {
-  remaining[side] = millis() - startTime[side];
+  remaining[side] = endTime[side]-millis();
 }
 
 boolean isTeaReady(byte side) {
@@ -21,8 +22,10 @@ boolean isTeaReady(byte side) {
 void processSide(byte side) {
   boolean keyHit = false;
   
-  keyHit = adjust(side, remaining[side]);
-
+  if ((getState(side)==IDLE) || (getState(side)==SELECT_TIME) || (getState(side)==TEA_READY) ) {
+    keyHit = adjust(side, remaining[side]);
+  }
+  
   if (keyHit) {
     noteActivity();  
     if ((IDLE == getState(side)) || (TEA_READY == getState(side))) {
@@ -42,6 +45,7 @@ void processSide(byte side) {
     noteActivity();  
     setState(side, COUNT_DOWN);
     startTime[side] = millis();
+    endTime[side]   = startTime[side] + remaining[side];
   }
 
   if ((getState(side)==COUNT_DOWN) && isTeaReady(side)) {
