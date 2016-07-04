@@ -6,7 +6,12 @@
 Adafruit_NeoPixel leds = Adafruit_NeoPixel(NUM_LEDS, LED_PIN, NEO_GRB + NEO_KHZ800);
 Servo servo;
 
+int armPin      [NUM_SIDES] = {LEFT_ARM_PIN,   RIGHT_ARM_PIN};
+int armLimitDown[NUM_SIDES] = {LEFT_ARM_LOWER, RIGHT_ARM_LOWER};
+int armLimitUp  [NUM_SIDES] = {LEFT_ARM_UPPER, RIGHT_ARM_UPPER};
 
+int ledOffset   [NUM_SIDES] = {OFFSET_LEFT,    OFFSET_RIGHT}; 
+int ledRotation [NUM_SIDES] = {ROTATION_LEFT,  ROTATION_RIGHT};
 
 void setupLeds() {
   leds.begin();
@@ -15,33 +20,36 @@ void setupLeds() {
 }
 
 void setupArms() {
-  lowerArm(LEFT);
-  lowerArm(RIGHT);
+  for (byte side=0; side<NUM_SIDES; side++) {
+    ensureArmLow(side);
+  }
 }
 
 void moveArm(int pin, int from, int to) {
   servo.attach(pin);
+  delay(ARM_DELAY);
   for (int i=0; i<=ARM_STEPS; i++) {
     servo.write(map(i, 0, ARM_STEPS, from, to));
     delay(ARM_DELAY);
   }
+  delay(ARM_DELAY_LONG);
   servo.detach();
 }
 
-void lowerArm(boolean left) {
-  if (left) {
-    moveArm(LEFT_ARM_PIN,  LEFT_ARM_UPPER,  LEFT_ARM_LOWER );
-  } else {
-    moveArm(RIGHT_ARM_PIN, RIGHT_ARM_UPPER, RIGHT_ARM_LOWER);
-  } 
+void ensureArmLow(byte side) {
+  servo.attach(armPin[side]);
+  delay(ARM_DELAY);
+  servo.write(armLimitDown[side]);
+  delay(ARM_DELAY_LONG);
+  servo.detach();
 }
 
-void raiseArm(boolean left) {
-  if (left) {
-    moveArm(LEFT_ARM_PIN,  LEFT_ARM_LOWER,  LEFT_ARM_UPPER );
-  } else {
-    moveArm(RIGHT_ARM_PIN, RIGHT_ARM_LOWER, RIGHT_ARM_UPPER);
-  } 
+void lowerArm(byte side) {
+  moveArm(armPin[side], armLimitUp[side], armLimitDown[side]);
+}
+
+void raiseArm(byte side) {
+  moveArm(armPin[side], armLimitDown[side], armLimitUp[side]);
 }
 
 void soundSignal() {
@@ -62,57 +70,52 @@ void setAllLedsToColor(long color) {
   }
 }
 
-void creepyGlowingEyes() {
+void glowEyes() {
   for (int j=0; j<3; j++) {
     for (int i=0; i<256; i++) {
       setAllLedsToColor((long)i<<16);
-      leds.show();
+      showAll();
     }
     for (int i=255; i>=0; i--) {
       setAllLedsToColor((long)i<<16);
-      leds.show();
+      showAll();
     }
   }
 }
 
 
-void drawCountDown(boolean left, int seconds, long color) {
-  int rotate, offset;
-  int ledsOn;
+void drawCountDown(byte side, int seconds, long color) {
+  int numLedsOn;
   
-  ledsOn = (seconds/DELTA)+1;
+  numLedsOn = (seconds/DELTA)+1;
   
-  if (left) {
-    rotate = OFFSET_LEFT;
-    offset = 0;
-  } else {
-    rotate = OFFSET_RIGHT;
-    offset = LEDS_PER_RING;
-  }
-  
-  for (int i=0; (i<ledsOn); i++) {
-    leds.setPixelColor(offset+(rotate+i)%LEDS_PER_RING, color);
+  for (int i=0; (i<numLedsOn); i++) {
+    leds.setPixelColor(ledOffset[side]+(ledRotation[side]+i)%LEDS_PER_RING, color);
   }
 
-  for (int i=ledsOn; (i<LEDS_PER_RING); i++) {
-    leds.setPixelColor(offset+(rotate+i)%LEDS_PER_RING, BACKGND_COLOR);
+  for (int i=numLedsOn; (i<LEDS_PER_RING); i++) {
+    leds.setPixelColor(ledOffset[side]+(ledRotation[side]+i)%LEDS_PER_RING, BACKGND_COLOR);
   }
+}
 
+void showAll() {
   leds.show();
 }
 
-long eyeTicks=1;
-int  dir = 6;
+long eyeTicks = 1;
+int  dir      = 6;
 
 void drawPupil(int dir){
-  leds.setPixelColor((0*LEDS_PER_RING)+(OFFSET_LEFT +dir)%LEDS_PER_RING, EYE_COLOR);
-  leds.setPixelColor((1*LEDS_PER_RING)+(OFFSET_RIGHT+dir)%LEDS_PER_RING, EYE_COLOR);
+  for (byte side=0; side<NUM_SIDES; side++) {
+    leds.setPixelColor(ledOffset[side]+(ledRotation[side]+dir)%LEDS_PER_RING, EYE_COLOR);
+  }
 }
 
 void drawLid(int from, int to){
-  for (int i=from; i<=to; i++) {
-    leds.setPixelColor((0*LEDS_PER_RING)+(OFFSET_LEFT +i)%LEDS_PER_RING, LID_COLOR);
-    leds.setPixelColor((1*LEDS_PER_RING)+(OFFSET_RIGHT+i)%LEDS_PER_RING, LID_COLOR);
+  for (byte side=0; side<NUM_SIDES; side++) {
+    for (int i=from; i<=to; i++) {
+      leds.setPixelColor(ledOffset[side]+(ledRotation[side]+i)%LEDS_PER_RING, LID_COLOR);
+    }
   }
 }
 
@@ -134,10 +137,7 @@ long animateEyes() {
     } // no else
   } // no else
   
-  for (int i=0; i<NUM_LEDS; i++) {
-    leds.setPixelColor(i, BALL_COLOR);
-  } 
-  
+  setAllLedsToColor(BALL_COLOR);
   drawPupil(dir);
 
   if (eyeTicks<11) {
@@ -150,9 +150,8 @@ long animateEyes() {
     eyeTicks = 200+random(50);
   } // no else
   
-  leds.show();
+  showAll();
 
   eyeTicks--;
 }
-
 

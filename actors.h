@@ -13,23 +13,25 @@
 #define BALL_COLOR    0x003f3f3f
 #define BACKGND_COLOR 0x00000000
 #define SELECT_COLOR  0x0000ff00
-#define COUNT_COLOR   0x00ff0000
+#define COUNT_COLOR   0x007f0000
 #define READY_COLOR   0x000000ff
 
-#define BRIGHTNESS          0xff
+#define BRIGHTNESS          0x7f
 
 #define TONE_DELAY           100
 
 void setupLeds();
 void setupArms();
 
-void lowerArm(boolean left);
-void raiseArm(boolean left);
+void ensureArmLow(byte side);
+void lowerArm(byte side);
+void raiseArm(byte side);
 
 void soundSignal();
 
-void creepyGlowingEyes();
+void glowEyes();
 long animateEyes();
-void drawCountDown(boolean left, int seconds, long color);
+void drawCountDown(byte side, int seconds, long color);
+void showAll();
 
 #endif

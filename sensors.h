@@ -4,9 +4,14 @@
 #include <Arduino.h>
 #include "config.h"
 
-#define LENGTH_MEAS_ROW       50
+#define MEAS_ROW_SIZE    50
+#define HISTORY_SIZE     10
+#define HISTORY_DELTA  2000  // store a value each 2 sec
 
-boolean adjust(int &value, int pinUp, int pinDown, int delta, int minimum, int maximum);
-int readTemp(boolean left);
+void    setupSensors();
+boolean adjust(byte side, int &value);
+int     readTemp(byte side);
+void    resetSuddenRaise();
+boolean isSuddenRaise(byte side);
 
 #endif

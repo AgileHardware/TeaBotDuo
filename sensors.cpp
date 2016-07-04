@@ -1,37 +1,74 @@
 #include "sensors.h"
 
+int pinUp    [NUM_SIDES] = {LEFT_UP_PIN,     RIGHT_UP_PIN    }; 
+int pinDown  [NUM_SIDES] = {LEFT_DOWN_PIN,   RIGHT_DOWN_PIN  }; 
+int pinSensor[NUM_SIDES] = {LEFT_SENSOR_PIN, RIGHT_SENSOR_PIN};
 
-boolean adjust(int &value, int pinUp, int pinDown, int delta, int minimum, int maximum) {
+long lastTime;
+int  history[NUM_SIDES][HISTORY_SIZE];
+
+void setupSensors() {
+  int value;
+  
+  for (byte side=0; side<NUM_SIDES; side++) {
+    value = readTemp(side);
+    for (int i=0; i<HISTORY_SIZE; i++) {
+      history[side][i] = value;
+    }
+  }
+}
+
+boolean adjust(byte side, int &value) {
   boolean result = false;
   int     begin  = value;
   
-  if (LOW == digitalRead(pinUp)) {
-    value = min(maximum, value+delta);
-  } else if (LOW == digitalRead(pinDown)) {
-    value = max(minimum, value-delta);
+  if (LOW == digitalRead(pinUp[side])) {
+    value = min(MAX_VALUE, value+DELTA);
+    result = true;
+  } else if (LOW == digitalRead(pinDown[side])) {
+    value = max(MIN_VALUE, value-DELTA);
+    result = true;
   }
   
   if (begin != value) {
     delay(200);
-    result = true;
   }
   
   return result;
 }
 
-int readTemp(boolean left) {
-  int sum=0;
-  int pin;
-
-  if (left) {
-    pin = LEFT_SENSOR_PIN;
-  } else {
-    pin = RIGHT_SENSOR_PIN;
-  }
+int readTemp(byte side) {
+  int sum = 0;
   
-  for (int i=0; i<LENGTH_MEAS_ROW; i++) {
-    sum += analogRead(pin);
+  for (int i=0; i<MEAS_ROW_SIZE; i++) {
+    sum += analogRead(pinSensor[side]);
   }
-  return sum/LENGTH_MEAS_ROW; 
+
+  return sum/MEAS_ROW_SIZE; 
+}
+
+boolean isSuddenRaise(byte side) {
+  boolean result = false;
+  int     temp;
+  long    now;
+  
+  temp = readTemp(side);
+  
+  if (temp > history[side][HISTORY_SIZE-1]+1) {
+    result = true;
+  }
+
+  now = millis();
+  
+  if (now > lastTime+HISTORY_DELTA) {
+    for (int i=0; i<HISTORY_SIZE-1; i++) {
+      history[side][i] = history[side][i+1];
+    }
+    
+    history[side][HISTORY_SIZE-1] = temp;
+    lastTime = now;
+  }  
+  
+  return result;
 }
 
